@@ -1,3 +1,6 @@
+-- [[ BELL HUB V2 - ULTIMATE & TEO BUYEN UPDATE ]]
+-- Author: Nauq
+
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -6,10 +9,11 @@ local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 
 ------------------------------------------------------------
--- 🌌 1. INTRO GUI (SIÊU TỐC)
+-- 🌌 1. INTRO GUI
 ------------------------------------------------------------
 local gui = Instance.new("ScreenGui")
-gui.Name = "BELL_HUB_INTRO"
+gui.Name = "BellHubIntro"
+gui.IgnoreGuiInset = true
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -23,49 +27,69 @@ local logo = Instance.new("ImageLabel")
 logo.Parent = gui
 logo.AnchorPoint = Vector2.new(0.5,0.5)
 logo.Position = UDim2.new(0.5,0,0.5,0)
-logo.Size = UDim2.new(0,200,0,200)
+logo.Size = UDim2.new(0,0,0,0)
 logo.BackgroundTransparency = 1
 logo.Image = "http://www.roblox.com/asset/?id=133832126046587"
-logo.ImageTransparency = 0
+logo.ImageTransparency = 1
+
+TweenService:Create(logo, TweenInfo.new(1.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0,200,0,200),
+    ImageTransparency = 0
+}):Play()
+
+task.spawn(function()
+    while logo.Parent do
+        logo.Rotation = logo.Rotation + 0.5
+        task.wait(0.01)
+    end
+end)
 
 local msg = Instance.new("TextLabel")
 msg.Parent = gui
 msg.AnchorPoint = Vector2.new(0.5,0)
-msg.Position = UDim2.new(0.5,0,0.7,0)
+msg.Position = UDim2.new(0.5,0,0.75,0)
 msg.Size = UDim2.new(0,600,0,80)
 msg.BackgroundTransparency = 1
 msg.Text = "BELL HUB"
 msg.TextColor3 = Color3.fromRGB(0,255,255)
 msg.Font = Enum.Font.GothamBlack
 msg.TextScaled = true
+msg.TextStrokeTransparency = 0
+msg.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+msg.TextTransparency = 1
+
+TweenService:Create(msg, TweenInfo.new(1.2), {TextTransparency=0}):Play()
 
 ------------------------------------------------------------
--- 🎛 2. NÚT BẤM MENU (RGB & Kéo thả)
+-- 🎛️ 2. NÚT MENU RGB (NEON)
 ------------------------------------------------------------
-local oldButton = player.PlayerGui:FindFirstChild("BellHub_Button")
-if oldButton then oldButton:Destroy() end
+if player.PlayerGui:FindFirstChild("BellHub_Button") then
+    player.PlayerGui.BellHub_Button:Destroy()
+end
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "BellHub_Button"
-ScreenGui.Parent = player.PlayerGui
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local Button = Instance.new("ImageButton")
 Button.Parent = ScreenGui
 Button.Size = UDim2.fromOffset(55,55)
 Button.Position = UDim2.new(0.1,0,0.2,0)
-Button.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Button.BackgroundColor3 = Color3.fromRGB(15,15,15)
 Button.Image = "rbxassetid://133832126046587"
+Button.AutoButtonColor = false
 
-local Corner = Instance.new("UICorner")
+local Corner = Instance.new("UICorner", Button)
 Corner.CornerRadius = UDim.new(1,0)
-Corner.Parent = Button
 
-local Stroke = Instance.new("UIStroke")
-Stroke.Parent = Button
+local Stroke = Instance.new("UIStroke", Button)
 Stroke.Thickness = 3
 
-local hue, rainbowSpeed, rainbowEnabled = 0, 0.5, true
+local hue = 0
+local rainbowSpeed = 0.5
+local rainbowEnabled = true
+
 RunService.RenderStepped:Connect(function(dt)
     if rainbowEnabled then
         hue = (hue + dt * rainbowSpeed) % 1
@@ -73,7 +97,6 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
--- Kéo thả chuẩn cho Mobile
 local dragging, dragStart, startPos
 Button.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -91,13 +114,14 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 ------------------------------------------------------------
--- 📦 3. KHỞI TẠO FLUENT
+-- 📦 3. LOAD FLUENT & TABS
 ------------------------------------------------------------
+repeat task.wait() until game:IsLoaded()
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
 local Window = Fluent:CreateWindow({
     Title = "BELL HUB",
-    SubTitle = "V2 Ultimate",
+    SubTitle = "Bản Tổng Hợp Siêu Cấp V2",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = true,
@@ -110,79 +134,89 @@ Button.MouseButton1Click:Connect(function() Window:Toggle() end)
 local Tabs = {
     Main0 = Window:AddTab({ Title = "Thông Tin", Icon = "info" }),
     Main1 = Window:AddTab({ Title = "Blox Fruits", Icon = "swords" }),
-    Main2 = Window:AddTab({ Title = "GARDEN HORIZONS", Icon = "leaf" }),
-    Settings = Window:AddTab({ Title = "CÀI ĐẶT", Icon = "settings" })
+    Main2 = Window:AddTab({ Title = "Garden Horizons", Icon = "leaf" }),
+    Main3 = Window:AddTab({ Title = "Teo Buyến", Icon = "star" }), -- Tab mới theo ý bạn
+    Main4 = Window:AddTab({ Title = "System", Icon = "zap" }),
+    Settings = Window:AddTab({ Title = "Cài Đặt UI", Icon = "settings" })
 }
 
--- --- TAB 0: MINI GAME & QUICK SIZE ---
-local infoTab = Tabs.Main0
-infoTab:AddSlider("QuickSize", {
-    Title = "Chỉnh Kích Thước HUB",
-    Default = 100, Min = 10, Max = 100, Rounding = 1,
-    Callback = function(Value)
-        local scale = Value / 100
-        Window.Root.Size = UDim2.fromOffset(580 * scale, 460 * scale)
-    end
+-- --- TAB 0: THÔNG TIN ---
+Tabs.Main0:AddButton({
+    Title = "Nauq",
+    Description = "Dán vào Youtube để xem điều bất ngờ",
+    Callback = function() setclipboard("https://www.youtube.com/watch?v=XqHvpUNLjlM") end
 })
 
-local gameDisplay = infoTab:AddParagraph({
-    Title = "🎮 FLAPPY BELL",
-    Content = "\n\n      🐦\n\n(Chạm để BẮT ĐẦU)"
+-- --- TAB 1: BLOX FRUITS ---
+Tabs.Main1:AddButton({ Title = "Banana Hub", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Obscure999/BananaHub/main/Main.lua"))() end })
+Tabs.Main1:AddButton({ Title = "Kaituna", Callback = function() loadstring(game:HttpGet("https://pastefy.app/WEG1iXWO/raw"))() end })
+Tabs.Main1:AddButton({ Title = "W Azure", Callback = function() loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/3b2169cf53461997433220287f0d4384.lua"))() end })
+Tabs.Main1:AddButton({ Title = "Quantum Hub", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/flazhy/QuantumOnyx/refs/heads/main/QuantumOnyx.lua"))() end })
+Tabs.Main1:AddButton({ Title = "Alchemy Hub", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AlchemyHub/Main/main/Loader.lua"))() end })
+Tabs.Main1:AddButton({ Title = "RiRi Hub", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/RiRiHub/RiRiHub/main/Main.lua"))() end })
+Tabs.Main1:AddButton({ Title = "Gravity Hub", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-GravityHub/BloxFruit/refs/heads/main/Main.lua"))() end })
+Tabs.Main1:AddButton({ Title = "Speed Hub X", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))() end })
+Tabs.Main1:AddButton({ Title = "OMG Hub", Callback = function() loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/20f318386e3fbf069ee3fa797cfc9f34.lua"))() end })
+Tabs.Main1:AddButton({ Title = "BlueX Hub", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-BlueX/BlueX-Hub/refs/heads/main/Main.lua"))() end })
+Tabs.Main1:AddButton({ Title = "Hoho Hub", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/acsu123/HOHO_H/main/Loading_UI'))() end })
+
+-- --- TAB 2: GARDEN HORIZONS ---
+Tabs.Main2:AddButton({ Title = "Garden Horizon Main", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/LynX99-9/komtolmmek2/refs/heads/main/Garden%20Horizon"))() end })
+Tabs.Main2:AddButton({ Title = "Speed Hub X Garden", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))() end })
+Tabs.Main2:AddButton({ Title = "Garden Horizon V2", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/GardenHorizons"))() end })
+Tabs.Main2:AddButton({ Title = "Blue X Garden", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Dev-BlueX/BlueX-Hub/refs/heads/main/Main.lua"))() end })
+
+-- --- TAB 3: TEO BUYẾN ---
+Tabs.Main3:AddButton({ 
+    Title = "Speed Hub Vội", 
+    Description = "Script Plants vs Brainrots",
+    Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/PlantsVsBrainrots"))() end 
 })
-local jumpBtn = Instance.new("TextButton")
-jumpBtn.Size = UDim2.new(1, 0, 1, 0); jumpBtn.BackgroundTransparency = 1; jumpBtn.Text = ""
-jumpBtn.Parent = gameDisplay.Frame
 
-local score, isPlaying, isWaiting, birdPos = 0, false, true, 3
-jumpBtn.MouseButton1Click:Connect(function()
-    if isWaiting then
-        isWaiting, isPlaying, score, birdPos = false, true, 0, 3
-        task.spawn(function()
-            while isPlaying do
-                task.wait(0.45)
-                birdPos = math.min(birdPos + 1, 5)
-                score = score + 1
-                local s = ""
-                for i = 1, 5 do
-                    if i == birdPos then s = s .. "      🐦      \n" else s = s .. "              \n" end
-                end
-                gameDisplay:SetText(s .. "\n⭐ Điểm: " .. score)
-                if birdPos >= 5 then
-                    isPlaying, isWaiting = false, true
-                    gameDisplay:SetText("\n\n      💀\n\nBẠN THUA! (Chạm để chơi lại)")
-                end
-            end
-        end)
-    elseif isPlaying then
-        birdPos = math.max(birdPos - 2, 1)
-    end
-end)
-
--- --- TAB SCRIPT (VÍ DỤ) ---
-Tabs.Main1:AddButton({ Title = "KAITUNA", Callback = function() print("Kaituna Loaded") end })
+-- --- TAB 4: SYSTEM ---
+Tabs.Main4:AddButton({ Title = "Fix Lag TurboLite", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/TurboLite/Script/main/FixLag.lua"))() end })
+Tabs.Main4:AddButton({ Title = "Rejoin Server", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, player) end })
 
 -- --- TAB SETTINGS ---
-Tabs.Settings:AddDropdown("Theme", { Title = "Chủ đề", Values = {"Dark", "Light", "Aqua", "Amethyst", "Rose", "Sunrise"}, Default = "Dark", Callback = function(V) Fluent:SetTheme(V) end })
+local fontMapping = {
+    ["Pixel Arcade"] = Enum.Font.Arcade,
+    ["Pixel Square"] = Enum.Font.RobotoMono,
+    ["Pixel Retro"] = Enum.Font.Code,
+    ["Gotham Bold"] = Enum.Font.GothamBold,
+    ["Gotham Black"] = Enum.Font.GothamBlack,
+    ["Ubuntu Modern"] = Enum.Font.Ubuntu,
+    ["Sci-Fi Future"] = Enum.Font.SciFi
+}
+local fontNames = {}
+for name, _ in pairs(fontMapping) do table.insert(fontNames, name) end
 
-local fontMap = {["Pixel"] = Enum.Font.Arcade, ["Bold"] = Enum.Font.GothamBold, ["SciFi"] = Enum.Font.SciFi}
-local fNames = {}; for n,_ in pairs(fontMap) do table.insert(fNames, n) end
-Tabs.Settings:AddDropdown("Font", { Title = "Phông chữ", Values = fNames, Default = "Bold", Callback = function(V)
-    for _, v in pairs(CoreGui:GetDescendants()) do if v:IsA("TextLabel") or v:IsA("TextButton") then v.Font = fontMap[V] end end
-end})
+Tabs.Settings:AddDropdown("FontPicker", {
+    Title = "Chọn Phông chữ",
+    Values = fontNames,
+    Default = "Gotham Bold",
+    Callback = function(Value)
+        local selectedFont = fontMapping[Value]
+        local function ApplyFont(parent)
+            for _, v in pairs(parent:GetDescendants()) do
+                if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then v.Font = selectedFont end
+            end
+        end
+        ApplyFont(game:GetService("CoreGui"))
+        ApplyFont(player.PlayerGui)
+    end
+})
 
-Tabs.Settings:AddToggle("RGB", { Title = "Viền RGB", Default = true, Callback = function(V) rainbowEnabled = V end })
-Tabs.Settings:AddButton({ Title = "Rejoin", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, player) end })
+Tabs.Settings:AddToggle("RGBBtn", { Title = "Viền RGB Nút Menu", Default = true, Callback = function(Value) rainbowEnabled = Value end })
+Tabs.Settings:AddSlider("RGBSpeed", { Title = "Tốc độ RGB", Default = 0.5, Min = 0.1, Max = 5, Rounding = 1, Callback = function(Value) rainbowSpeed = Value end })
 
 ------------------------------------------------------------
--- 🕒 DỌN DẸP INTRO
-------------------------------------------------------------
+-- 🕒 CLEANUP & START
 task.spawn(function()
+    task.wait(4.5)
+    TweenService:Create(logo, TweenInfo.new(1.2), {ImageTransparency=1}):Play()
+    TweenService:Create(msg, TweenInfo.new(1.2), {TextTransparency=1}):Play()
+    TweenService:Create(bg, TweenInfo.new(1.2), {BackgroundTransparency=1}):Play()
     task.wait(1.5)
-    local t = TweenInfo.new(0.5)
-    TweenService:Create(logo, t, {ImageTransparency=1}):Play()
-    TweenService:Create(msg, t, {TextTransparency=1}):Play()
-    TweenService:Create(bg, t, {BackgroundTransparency=1}):Play()
-    task.wait(0.5)
     gui:Destroy()
     Window:SelectTab(1)
 end)
