@@ -1,0 +1,188 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
+
+------------------------------------------------------------
+-- 🌌 1. INTRO GUI (SIÊU TỐC)
+------------------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name = "BELL_HUB_INTRO"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local bg = Instance.new("Frame")
+bg.Size = UDim2.new(1,0,1,0)
+bg.BackgroundColor3 = Color3.fromRGB(0,0,0)
+bg.BackgroundTransparency = 0.3
+bg.Parent = gui
+
+local logo = Instance.new("ImageLabel")
+logo.Parent = gui
+logo.AnchorPoint = Vector2.new(0.5,0.5)
+logo.Position = UDim2.new(0.5,0,0.5,0)
+logo.Size = UDim2.new(0,200,0,200)
+logo.BackgroundTransparency = 1
+logo.Image = "http://www.roblox.com/asset/?id=133832126046587"
+logo.ImageTransparency = 0
+
+local msg = Instance.new("TextLabel")
+msg.Parent = gui
+msg.AnchorPoint = Vector2.new(0.5,0)
+msg.Position = UDim2.new(0.5,0,0.7,0)
+msg.Size = UDim2.new(0,600,0,80)
+msg.BackgroundTransparency = 1
+msg.Text = "BELL HUB"
+msg.TextColor3 = Color3.fromRGB(0,255,255)
+msg.Font = Enum.Font.GothamBlack
+msg.TextScaled = true
+
+------------------------------------------------------------
+-- 🎛 2. NÚT BẤM MENU (RGB & Kéo thả)
+------------------------------------------------------------
+local oldButton = player.PlayerGui:FindFirstChild("BellHub_Button")
+if oldButton then oldButton:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BellHub_Button"
+ScreenGui.Parent = player.PlayerGui
+ScreenGui.ResetOnSpawn = false
+
+local Button = Instance.new("ImageButton")
+Button.Parent = ScreenGui
+Button.Size = UDim2.fromOffset(55,55)
+Button.Position = UDim2.new(0.1,0,0.2,0)
+Button.BackgroundColor3 = Color3.fromRGB(20,20,20)
+Button.Image = "rbxassetid://133832126046587"
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(1,0)
+Corner.Parent = Button
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Parent = Button
+Stroke.Thickness = 3
+
+local hue, rainbowSpeed, rainbowEnabled = 0, 0.5, true
+RunService.RenderStepped:Connect(function(dt)
+    if rainbowEnabled then
+        hue = (hue + dt * rainbowSpeed) % 1
+        Stroke.Color = Color3.fromHSV(hue,1,1)
+    end
+end)
+
+-- Kéo thả chuẩn cho Mobile
+local dragging, dragStart, startPos
+Button.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true; dragStart = input.Position; startPos = Button.Position
+    end
+end)
+Button.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        Button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+------------------------------------------------------------
+-- 📦 3. KHỞI TẠO FLUENT
+------------------------------------------------------------
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "BELL HUB",
+    SubTitle = "V2 Ultimate",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.End
+})
+
+Button.MouseButton1Click:Connect(function() Window:Toggle() end)
+
+local Tabs = {
+    Main0 = Window:AddTab({ Title = "Thông Tin", Icon = "info" }),
+    Main1 = Window:AddTab({ Title = "Blox Fruits", Icon = "swords" }),
+    Main2 = Window:AddTab({ Title = "GARDEN HORIZONS", Icon = "leaf" }),
+    Settings = Window:AddTab({ Title = "CÀI ĐẶT", Icon = "settings" })
+}
+
+-- --- TAB 0: MINI GAME & QUICK SIZE ---
+local infoTab = Tabs.Main0
+infoTab:AddSlider("QuickSize", {
+    Title = "Chỉnh Kích Thước HUB",
+    Default = 100, Min = 10, Max = 100, Rounding = 1,
+    Callback = function(Value)
+        local scale = Value / 100
+        Window.Root.Size = UDim2.fromOffset(580 * scale, 460 * scale)
+    end
+})
+
+local gameDisplay = infoTab:AddParagraph({
+    Title = "🎮 FLAPPY BELL",
+    Content = "\n\n      🐦\n\n(Chạm để BẮT ĐẦU)"
+})
+local jumpBtn = Instance.new("TextButton")
+jumpBtn.Size = UDim2.new(1, 0, 1, 0); jumpBtn.BackgroundTransparency = 1; jumpBtn.Text = ""
+jumpBtn.Parent = gameDisplay.Frame
+
+local score, isPlaying, isWaiting, birdPos = 0, false, true, 3
+jumpBtn.MouseButton1Click:Connect(function()
+    if isWaiting then
+        isWaiting, isPlaying, score, birdPos = false, true, 0, 3
+        task.spawn(function()
+            while isPlaying do
+                task.wait(0.45)
+                birdPos = math.min(birdPos + 1, 5)
+                score = score + 1
+                local s = ""
+                for i = 1, 5 do
+                    if i == birdPos then s = s .. "      🐦      \n" else s = s .. "              \n" end
+                end
+                gameDisplay:SetText(s .. "\n⭐ Điểm: " .. score)
+                if birdPos >= 5 then
+                    isPlaying, isWaiting = false, true
+                    gameDisplay:SetText("\n\n      💀\n\nBẠN THUA! (Chạm để chơi lại)")
+                end
+            end
+        end)
+    elseif isPlaying then
+        birdPos = math.max(birdPos - 2, 1)
+    end
+end)
+
+-- --- TAB SCRIPT (VÍ DỤ) ---
+Tabs.Main1:AddButton({ Title = "KAITUNA", Callback = function() print("Kaituna Loaded") end })
+
+-- --- TAB SETTINGS ---
+Tabs.Settings:AddDropdown("Theme", { Title = "Chủ đề", Values = {"Dark", "Light", "Aqua", "Amethyst", "Rose", "Sunrise"}, Default = "Dark", Callback = function(V) Fluent:SetTheme(V) end })
+
+local fontMap = {["Pixel"] = Enum.Font.Arcade, ["Bold"] = Enum.Font.GothamBold, ["SciFi"] = Enum.Font.SciFi}
+local fNames = {}; for n,_ in pairs(fontMap) do table.insert(fNames, n) end
+Tabs.Settings:AddDropdown("Font", { Title = "Phông chữ", Values = fNames, Default = "Bold", Callback = function(V)
+    for _, v in pairs(CoreGui:GetDescendants()) do if v:IsA("TextLabel") or v:IsA("TextButton") then v.Font = fontMap[V] end end
+end})
+
+Tabs.Settings:AddToggle("RGB", { Title = "Viền RGB", Default = true, Callback = function(V) rainbowEnabled = V end })
+Tabs.Settings:AddButton({ Title = "Rejoin", Callback = function() game:GetService("TeleportService"):Teleport(game.PlaceId, player) end })
+
+------------------------------------------------------------
+-- 🕒 DỌN DẸP INTRO
+------------------------------------------------------------
+task.spawn(function()
+    task.wait(1.5)
+    local t = TweenInfo.new(0.5)
+    TweenService:Create(logo, t, {ImageTransparency=1}):Play()
+    TweenService:Create(msg, t, {TextTransparency=1}):Play()
+    TweenService:Create(bg, t, {BackgroundTransparency=1}):Play()
+    task.wait(0.5)
+    gui:Destroy()
+    Window:SelectTab(1)
+end)
